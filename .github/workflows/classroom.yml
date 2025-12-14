@@ -1,0 +1,55 @@
+name: Autograding
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout student repo
+      - name: Checkout student submission
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      # 3. Checkout private tester repo
+      - name: Checkout test suite
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ secrets.OOP_QUIZ_SEC35_TESTER_REPO }}  # change to your org/repo
+          ref: main
+          path: tester
+      # 4. Setup files
+      - name: setup files
+        run: |
+          echo "=== Setup files ==="
+          tree ./tester
+          cp -r tester/.github/* .github/
+          rsync -av \
+            --include="*/" \
+            --include="*.test.ts" \
+            --exclude="*" \
+            tester/src/ src/
+          cp tester/package.json .
+          cp tester/jest.config.js .
+          rm -r tester
+          echo "=== Finish Setup files ==="
+          tree ./src/
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: npm install
+      # 5. Run tests with Jest
+      # - name: Run Jest tests
+      #   run: npx jest
+      #   continue-on-error: true
+      # 6. Autograding action
+      - name: Autograding
+        uses: education/autograding@v1
