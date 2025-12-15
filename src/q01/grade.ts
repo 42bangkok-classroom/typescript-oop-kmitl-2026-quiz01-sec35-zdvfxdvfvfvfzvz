@@ -17,7 +17,7 @@ function grade(score: number): string {
 if (input === undefined) {
   console.log("Invalid Input");
 } else {
-  const score = parseFloat(input);
+  const score = Number(input);
 
   if (isNaN(score) || score < 0 || score > 100) {
     console.log("Invalid Input");
